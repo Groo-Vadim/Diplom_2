@@ -1,3 +1,4 @@
+import ingredients.IngredientUtils;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
 import order.*;
@@ -17,7 +18,7 @@ public class OrderGetTest {
 
     @Test
     @DisplayName("Test: get order with ingredients without authorization")
-    public void GetOrderNotAuthorized() {
+    public void getOrderNotAuthorized() {
         // Получение заказа
         Response getOrderResponse = OrderSetup.getOrderNotAuthorized();
         // Проверяем статус-код
@@ -27,7 +28,7 @@ public class OrderGetTest {
 
     @Test
     @DisplayName("Test: get order with ingredients with authorization")
-    public void GetOrderAuthorized() {
+    public void getOrderAuthorized() {
         // Данные для пользователя
         Response createResponse = userActionsSetup.createUser(new User("resu@btr1.ru", "123456", "resu"));
 
@@ -37,9 +38,10 @@ public class OrderGetTest {
         // Сохраняем accessToken из тела ответа
         String idString = createResponse.jsonPath().getString("accessToken");
         accessToken = idString;
-
+        // Получаем случайные идентификаторы ингредиентов
+        String[] randomIngredientIds = IngredientUtils.getRandomIngredientIds(3);
         // Создание заказа
-        Response createOrderResponse = OrderSetup.createOrderAuthorized(new Order(new String[]{"61c0c5a71d1f82001bdaaa7a", "61c0c5a71d1f82001bdaaa71"}), accessToken);
+        Response createOrderResponse = OrderSetup.createOrderAuthorized(new Order(randomIngredientIds), accessToken);
         // Проверяем статус-код
         createOrderResponse.then().assertThat().statusCode(SC_OK);
         createOrderResponse.then().assertThat().body("success", equalTo(true));
@@ -48,7 +50,7 @@ public class OrderGetTest {
         Response getOrderResponse = OrderSetup.getOrderAuthorized(accessToken);
         // Проверяем статус-код
         getOrderResponse.then().assertThat().statusCode(SC_OK);
-        getOrderResponse.then().assertThat().body("orders[0].ingredients", equalTo(Arrays.asList("61c0c5a71d1f82001bdaaa7a", "61c0c5a71d1f82001bdaaa71")));
+        getOrderResponse.then().assertThat().body("orders[0].ingredients", equalTo(Arrays.asList(randomIngredientIds)));
 
         // Удаление пользователя
         Response deleteResponse = userActionsSetup.deleteUser(accessToken);

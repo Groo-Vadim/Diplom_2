@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class UserLoginTest {
 
-    private boolean skipAfter = false;
     // Создаем экземпляр userActionsSetup
     private final UserActionsSetup userActionsSetup = new UserActionsSetup();
     // Инициализируем accessToken
@@ -19,10 +18,9 @@ public class UserLoginTest {
     @After
     public void deleteUser() {
         // Пропустить выполнение метода, если флаг установлен
-        if (skipAfter) {
-            return;
+        if (accessToken != null) {
+            Response deleteResponse = userActionsSetup.deleteUser(accessToken);
         }
-        Response deleteResponse = userActionsSetup.deleteUser(accessToken);
     }
 
     @Test
@@ -172,6 +170,5 @@ public class UserLoginTest {
         // Проверяем статус-код и содержимое ответа
         loginResponse.then().assertThat().statusCode(SC_UNAUTHORIZED);
         loginResponse.then().assertThat().body("message", equalTo("email or password are incorrect"));
-        skipAfter = true;
     }
 }
